@@ -23,10 +23,12 @@ else:
     else:
       filename = params[i]
     i.inc
-  createDir("arrowcache")
+  var 
+    tmppath = filename.splitPath
+  createDir(tmppath.head & (if tmppath.head == "": "" else: "/") & "arrowcache")
   var
     fp = openr(filename)
-    tmpname = "arrowcache/" & output & ".c"
+    tmpname = tmppath.head & (if tmppath.head == "": "" else: "/") & "arrowcache/" & tmppath.tail & ".c"
     tmpfp = open(tmpname, FileMode.fmWrite)
     token = fp.getTokens
     init = 0
