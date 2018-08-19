@@ -11,6 +11,7 @@ else:
     i = 0
     filename = ""
     output = ""
+    runflag = false
   while i < os.paramCount():
     case params[i]
     of "-o":
@@ -20,6 +21,8 @@ else:
       discard
     of "--include":
       discard
+    of "-r", "--run":
+      runflag = true
     else:
       filename = params[i]
     i.inc
@@ -42,5 +45,8 @@ else:
   code = "#include <stdio.h>\n" & code
   tmpfp.write(code)
   close(tmpfp)
-  let cmd = "cc " & tmpname & " -o " & output
-  discard execShellCmd(cmd)
+  let
+    cmd = "cc " & tmpname & " -o " & output
+    res = execShellCmd(cmd)
+  if res != 0: quit(res)
+  if runflag: quit(execShellCmd("./" & output))
