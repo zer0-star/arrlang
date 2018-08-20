@@ -33,6 +33,7 @@ int main(void){
 ## usage
 `arrlang -o test test.arr`  
 options:  
--o: set output file  
--h: show help  
---include: set include files  
+-o:                    set output file  
+-h:                    show help  
+-i/--import/--include: set include files  
+-r/--run:              run after compiling  

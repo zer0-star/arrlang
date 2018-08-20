@@ -1,5 +1,15 @@
 import math, strutils, sequtils, algorithm, common, lexer, os, tree, nodeedit, abstract, asm2code
 
+const USAGE = """
+Usage: arrlang [OPTIONS] sourcefile
+
+arrlang is the best language powered by "ARROW".
+
+  -o                      set the output file
+  -h                      show this message and exit
+  -i/--include/--import   set the include/import files
+  -r/--run                run after compiling
+"""
 
 if os.paramCount() == 0:
   echo "filename wasn't found"
@@ -12,15 +22,18 @@ else:
     filename = ""
     output = ""
     runflag = false
+    includes = @["stdio.h"]
   while i < os.paramCount():
     case params[i]
-    of "-o":
+    of "-o", "--output":
       i.inc
       output = params[i]
-    of "-h":
-      discard
-    of "--include":
-      discard
+    of "-h", "--help":
+      echo USAGE
+      quit(QuitSuccess)
+    of "-i", "--import", "--include":
+      i.inc
+      includes.add(params[i].split(','))
     of "-r", "--run":
       runflag = true
     else:
@@ -42,7 +55,8 @@ else:
   var src = SOURCE(program: node[0], node: node, token: token)
   src.eliminateInsignificant
   var code = src.program.asmProgram(src)
-  code = "#include <stdio.h>\n" & code
+  for incstr in includes:
+    code = ("#include <$#>\n" % incstr) & code
   tmpfp.write(code)
   close(tmpfp)
   let
