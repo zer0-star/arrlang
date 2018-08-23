@@ -1,4 +1,4 @@
-import lexer, common, tree, nodeedit, abstract
+import lexer, common, tree, nodeedit, abstract, autoinclude
 
 proc asmProgram*(node: NODE; s: SOURCE): string
 proc asmF_dec(node: NODE; s: SOURCE): string
@@ -155,6 +155,7 @@ proc asmCall(node: NODE; s: SOURCE): string =
         result &= operator & asmExpression(expr, s)
       result &= ")"
     else:
+      autoInclude(s.token[fun.init].str)
       result &= s.token[fun.init].str
       result &= "(" & (if arg.kind == EXPRESSION: asmExpression(arg, s) elif arg.kind == EXPRESSION_LIST: asmExpression_list(arg, s) else: "") & ")"
 proc asmExpression_list(node: NODE; s: SOURCE): string =
