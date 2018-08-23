@@ -1,5 +1,2 @@
-arrlang: main.nim lexer.nim tree.nim common.nim
-	@if ! type nim > /dev/null 2>&1; then\
-		brew install nim;\
-	fi
-	nim c -o:bin/macosx/$@ -d:release main
+arrlang:
+	nim c -d:release -o:bin/arrlang main

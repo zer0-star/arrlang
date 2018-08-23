@@ -1,4 +1,4 @@
-import math, strutils, sequtils, algorithm, common, lexer, os, tree, nodeedit, abstract, asm2code
+import math, strutils, sequtils, algorithm, common, lexer, os, tree, nodeedit, abstract, asm2code, autoinclude
 
 const USAGE = """
 Usage: arrlang [OPTIONS] sourcefile
@@ -22,7 +22,7 @@ else:
     filename = ""
     output = ""
     runflag = false
-    includes = @["stdio.h"]
+    userIncludes: seq[string] = @[]
   while i < os.paramCount():
     case params[i]
     of "-o", "--output":
@@ -33,7 +33,7 @@ else:
       quit(QuitSuccess)
     of "-i", "--import", "--include":
       i.inc
-      includes.add(params[i].split(','))
+      userIncludes.add(params[i].split(','))
     of "-r", "--run":
       runflag = true
     else:
@@ -55,6 +55,8 @@ else:
   var src = SOURCE(program: node[0], node: node, token: token)
   src.eliminateInsignificant
   var code = src.program.asmProgram(src)
+  for incstr in userIncludes:
+    code = ("#include \"$#\"" % incstr) & code
   for incstr in includes:
     code = ("#include <$#>\n" % incstr) & code
   tmpfp.write(code)
