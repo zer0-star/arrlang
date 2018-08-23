@@ -135,7 +135,19 @@ proc asmAssign(node: NODE; s: SOURCE): string =
     variable = node.down
     expr = variable.right
   assert expr != nil
-  result = s.token[variable.init].str & "=" & asmExpression(expr, s) & ";\n"
+  if variable.kind == VARIABLE:
+    result = s.token[variable.init].str & "=" & asmExpression(expr, s) & ";\n"
+  elif variable.kind == VARIABLE_LIST:
+    var
+      vardown = variable.down
+      exprdown = expr.down
+    result = ""
+    assert vardown.countHorizontal == exprdown.countHorizontal
+    while vardown != nil:
+      result &= s.token[vardown.init].str & "=" & asmExpression(exprdown, s) & ";"
+      vardown = vardown.right
+      exprdown = exprdown.right
+    result &= "\n"
 proc asmCall(node: NODE; s: SOURCE): string =
   var arg, fun: NODE
   if node.down.kind == VARIABLE:
