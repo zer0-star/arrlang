@@ -39,6 +39,9 @@ else:
     else:
       filename = params[i]
     i.inc
+  if output == "":
+    var (dir, name, _) = filename.splitFile
+    output = dir & "/" & name
   var 
     tmppath = filename.splitPath
   createDir(tmppath.head & (if tmppath.head == "": "" else: "/") & "arrowcache")
