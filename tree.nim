@@ -275,14 +275,23 @@ proc findV_dec(init, last: var int; token: seq[TOKEN]): SYNTAX_KIND =
   elif token[nt].kind == COLON:
     last = init
     result = SKIP_NODE
-  elif token[nt].kind == IDENTIFY and token[nt+1].kind == RBRACKET:
-    last = init
-    result = VARIABLE
+  elif token[nt].kind == IDENTIFY:
+    if token[nt+1].kind == RBRACKET:
+      last = init
+      result = VARIABLE
+    elif token[nt+1].kind == COMMA:
+      while token[nt+1].kind != RBRACKET:
+        nt.inc
+      last = nt
+      result = VARIABLE_LIST
   elif token[nt].kind == LARROW:
     last = init
     result = SKIP_NODE
-  else:
-    result = EXPRESSION
+  elif token[nt-1].kind == LARROW:
+    if token[nt].kind == LPAREN and searchNextRparen(nt, argLast, token) == argLast:
+      result = EXPRESSION_LIST
+    else:
+      result = EXPRESSION
 
 proc findFunction(init, last: var int; token: seq[TOKEN]): SYNTAX_KIND =
   let

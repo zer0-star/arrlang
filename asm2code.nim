@@ -76,9 +76,33 @@ proc asmV_dec(node: NODE; s: SOURCE): string =
   var
     typ = node.down
     variable = typ.right
-  result = s.token[typ.init].str & " " & s.token[variable.init].str
-  if variable.right != nil:
-    result &= "=" & asmExpression(variable.right, s)
+  result = s.token[typ.init].str & " "
+  if variable.kind == VARIABLE:
+    result &= s.token[variable.init].str
+    if variable.right != nil:
+      result &= "=" & asmExpression(variable.right, s)
+  elif variable.kind == VARIABLE_LIST:
+    var down = variable.down
+    if variable.right != nil:
+      var expr = variable.right
+      if expr.kind == EXPRESSION:
+        result &= s.token[down.init].str & "=" & asmExpression(expr, s)
+        while down.right != nil:
+          down = down.right
+          result &= "," & s.token[down.init].str & "=" & asmExpression(expr, s)
+      elif expr.kind == EXPRESSION_LIST:
+        var exprdown = expr.down
+        assert down.countHorizontal == exprdown.countHorizontal
+        result &= s.token[down.init].str & "=" & asmExpression(exprdown, s)
+        while down.right != nil:
+          down = down.right
+          exprdown = exprdown.right
+          result &= "," & s.token[down.init].str & "=" & asmExpression(exprdown, s)
+    else:
+      result &= s.token[down.init].str
+      while down.right != nil:
+        down = down.right
+        result &= "," & s.token[down.init].str
 proc asmFunction(node: NODE; s: SOURCE): string =
   var down = node.down
   assert down != nil
