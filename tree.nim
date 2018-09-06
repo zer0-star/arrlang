@@ -275,14 +275,23 @@ proc findV_dec(init, last: var int; token: seq[TOKEN]): SYNTAX_KIND =
   elif token[nt].kind == COLON:
     last = init
     result = SKIP_NODE
-  elif token[nt].kind == IDENTIFY and token[nt+1].kind == RBRACKET:
-    last = init
-    result = VARIABLE
+  elif token[nt].kind == IDENTIFY:
+    if token[nt+1].kind == RBRACKET:
+      last = init
+      result = VARIABLE
+    elif token[nt+1].kind == COMMA:
+      while token[nt+1].kind != RBRACKET:
+        nt.inc
+      last = nt
+      result = VARIABLE_LIST
   elif token[nt].kind == LARROW:
     last = init
     result = SKIP_NODE
-  else:
-    result = EXPRESSION
+  elif token[nt-1].kind == LARROW:
+    if token[nt].kind == LPAREN and searchNextRparen(nt, argLast, token) == argLast:
+      result = EXPRESSION_LIST
+    else:
+      result = EXPRESSION
 
 proc findFunction(init, last: var int; token: seq[TOKEN]): SYNTAX_KIND =
   let
@@ -377,12 +386,18 @@ proc findSentence(init, last: var int; token: seq[TOKEN]): SYNTAX_KIND =
       while token[nt].kind != SEMICOLON:
         nt.inc
       last = nt
-  elif token[nt].kind == LPAREN and token[searchNextRparen(nt, argLast, token)+1].kind == RARROW:
+  elif token[nt].kind == LPAREN:
     nt = searchNextRparen(nt, argLast, token)
-    result = CALL
-    while token[nt].kind != SEMICOLON:
-      nt.inc
-    last = nt - 1
+    if token[nt+1].kind == RARROW:
+      result = CALL
+      while token[nt].kind != SEMICOLON:
+        nt.inc
+      last = nt - 1
+    elif token[nt+1].kind == LARROW:
+      result = ASSIGN
+      while token[nt].kind != SEMICOLON:
+        nt.inc
+      last = nt
   elif token[nt].kind == LBRACE:
     #assert searchNextRbrace(nt, argLast, token) == argLast
     last = init
@@ -494,13 +509,20 @@ proc findAssign(init, last: var int; token: seq[TOKEN]): SYNTAX_KIND =
     last = init
     result = VARIABLE
   elif token[nt].kind == LARROW:
-    assert token[nt-1].kind == IDENTIFY
     last = init
     result = SKIP_NODE
   elif token[nt].kind == SEMICOLON:
     assert nt == argLast
     last = init
     result = SKIP_NODE
+  elif token[nt].kind == LPAREN:
+    nt = searchNextRparen(nt, argLast, token)
+    assert nt > 0
+    last = nt
+    if token[nt+1].kind == LARROW:
+      result = VARIABLE_LIST
+    elif token[nt+1].kind == SEMICOLON:
+      result = EXPRESSION_LIST
   elif token[nt-1].kind == LARROW:
     while token[nt].kind != SEMICOLON:
       nt.inc
